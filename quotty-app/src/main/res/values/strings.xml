@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Quotty</string>
+
+    <string name="please_wait">Пожалуйста, дождитесь загрузки первой цитаты…</string>
+
+    <string name="app_authors">Авторы приложения</string>
+    <string name="unknown_author">(автор не указан)</string>
+
+    <string name="error_no_internet">Не удаётся подключиться к сети</string>
+    <string name="error_network">Не удалось получить новую цитату, попробуйте позже</string>
+    <string name="error_generic">Ошибка при загрузке новой цитаты</string>
+</resources>

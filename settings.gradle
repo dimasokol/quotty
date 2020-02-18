@@ -1,0 +1,2 @@
+include ':quotty-app'
+rootProject.name='Quotty'
