@@ -1,15 +1,13 @@
 package ru.dimasokol.quotty.data
 
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
-import org.mockito.stubbing.Answer
 import ru.dimasokol.quotty.network.UrlLoader
 import ru.dimasokol.quotty.utils.Sleeper
-import java.io.InputStream
+import java.io.BufferedInputStream
 
 class NetworkQuotesRepositoryTest {
 
@@ -19,20 +17,23 @@ class NetworkQuotesRepositoryTest {
 
     @Before
     fun setUp() {
-        networkLoader = mock(UrlLoader::class.java)
+        networkLoader = mockk()
         counter = 0
 
-        `when`(networkLoader.loadAsStream(any())).thenAnswer(Answer<InputStream> {
-            counter++
+        every { networkLoader.loadAsStream(any()) } answers {
+            BufferedInputStream(javaClass.classLoader?.getResourceAsStream("quote.json"))
+        } andThen {
+            BufferedInputStream(javaClass.classLoader?.getResourceAsStream("quote.json"))
+        } andThen {
+            BufferedInputStream(javaClass.classLoader?.getResourceAsStream("quote.json"))
+        } andThen {
+            BufferedInputStream(javaClass.classLoader?.getResourceAsStream("quote2.json"))
+        }
 
-            if (counter < 3) {
-                return@Answer javaClass.classLoader?.getResourceAsStream("quote.json")
-            }
+        val sleeper = mockk<Sleeper>()
+        every { sleeper.sleepFor(any()) } answers { nothing }
 
-            return@Answer javaClass.classLoader?.getResourceAsStream("quote2.json")
-        })
-
-        repository = NetworkQuotesRepository(networkLoader, mock(Sleeper::class.java))
+        repository = NetworkQuotesRepository(networkLoader, sleeper)
     }
 
     @Test(timeout = 1000L)
@@ -44,8 +45,6 @@ class NetworkQuotesRepositoryTest {
         assertEquals(NEW_URL, result.url)
     }
 
-    // Хренов котёл опять требует костылей
-    private fun <T> any(): T = Mockito.any<T>()
 
     private companion object {
         const val OLD_URL = "http://forismatic.com/ru/7a84fd4f7f/"

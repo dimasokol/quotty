@@ -1,10 +1,11 @@
 package ru.dimasokol.quotty.utils
 
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyLong
-import org.mockito.ArgumentMatchers.eq
-import org.mockito.Mockito.*
 
 class SleeperTest {
 
@@ -13,22 +14,22 @@ class SleeperTest {
 
     @Before
     fun setUp() {
-        timeSource = mock(TimeSource::class.java)
-        `when`(timeSource.unixTime()).thenReturn(CURRENT_TIME)
+        timeSource = mockk()
+        every {timeSource.unixTime()} returns CURRENT_TIME
 
-        sleeper = spy(MockSleeper(timeSource))
+        sleeper = spyk(MockSleeper(timeSource))
     }
 
     @Test
     fun sleepTo() {
         sleeper.sleepTo(PAST_TIME)
-        verify(sleeper, never()).sleepFor(anyLong())
+        verify(exactly = 0) { sleeper.sleepFor(any()) }
 
         sleeper.sleepTo(CURRENT_TIME)
-        verify(sleeper, never()).sleepFor(anyLong())
+        verify(exactly = 0) { sleeper.sleepFor(any()) }
 
         sleeper.sleepTo(FUTURE_TIME)
-        verify(sleeper).sleepFor(eq(EXPECTED_SLEEP))
+        verify(exactly = 1) { sleeper.sleepFor(eq(EXPECTED_SLEEP)) }
     }
 
     private open class MockSleeper(timeSource: TimeSource) : Sleeper(timeSource) {

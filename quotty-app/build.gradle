@@ -31,7 +31,9 @@ dependencies {
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.2.0'
+
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3'
@@ -44,7 +46,7 @@ dependencies {
     // Unit-тесты
     // Что за бред, почему IDE поддерживает только 4.12?
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.mockito:mockito-core:2.28.2'
+    testImplementation 'io.mockk:mockk:1.8.13'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.3.3'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
