@@ -2,4 +2,6 @@
 <resources>
     <dimen name="quote_padding">24dp</dimen>
     <dimen name="author_padding">32dp</dimen>
+    <dimen name="progress_size">96dp</dimen>
+    <dimen name="refresh_button_size">72dp</dimen>
 </resources>
