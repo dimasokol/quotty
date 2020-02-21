@@ -5,14 +5,17 @@ import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import ru.dimasokol.quotty.exceptions.NetworkException
 import ru.dimasokol.quotty.network.UrlLoader
 import ru.dimasokol.quotty.utils.Sleeper
 import java.io.BufferedInputStream
+import java.net.UnknownHostException
 
 class NetworkQuotesRepositoryTest {
 
     lateinit var networkLoader: UrlLoader
     lateinit var repository: NetworkQuotesRepository
+    lateinit var sleeper: Sleeper
     var counter: Int = 0
 
     @Before
@@ -30,7 +33,7 @@ class NetworkQuotesRepositoryTest {
             BufferedInputStream(javaClass.classLoader?.getResourceAsStream("quote2.json"))
         }
 
-        val sleeper = mockk<Sleeper>()
+        sleeper = mockk()
         every { sleeper.sleepFor(any()) } answers { nothing }
 
         repository = NetworkQuotesRepository(networkLoader, sleeper)
@@ -43,6 +46,15 @@ class NetworkQuotesRepositoryTest {
 
         result = repository.loadNextQuote(OLD_URL)
         assertEquals(NEW_URL, result.url)
+    }
+
+    @Test(expected = NetworkException::class)
+    fun isRightExceptionThrown() {
+        val loader = mockk<UrlLoader>()
+        every { loader.loadAsStream(any()) } throws UnknownHostException()
+
+        repository = NetworkQuotesRepository(loader, sleeper)
+        repository.loadNextQuote(null)
     }
 
 

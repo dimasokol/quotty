@@ -3,6 +3,7 @@ package ru.dimasokol.quotty.presentation
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.dimasokol.quotty.R
@@ -32,13 +33,15 @@ class MainScreenPresenter(
 
     private var lastError: Throwable? = null
 
+    private val superJob = SupervisorJob()
+
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         state = makeErrorState()
         lastError = throwable
         notifyView()
     }
 
-    private var presenterScope = CoroutineScope(exceptionHandler)
+    private var presenterScope = CoroutineScope(exceptionHandler + superJob)
 
     fun attachView(view: MainScreenView?) {
         this.view = view
@@ -52,11 +55,6 @@ class MainScreenPresenter(
     fun loadNextQuote() {
         if (currentJob?.isActive == true) {
             return
-        }
-
-        if (currentJob?.isCancelled == true) {
-            // Я не придумал лучшего, чем пересоздавать остановленный скоуп
-            presenterScope = CoroutineScope(exceptionHandler)
         }
 
         state = makeLoadingState()
@@ -76,7 +74,7 @@ class MainScreenPresenter(
         }
     }
 
-    private suspend fun doLoadNextQuote(): QuoteResponse = withContext(ioDispatcher) {
+    private suspend fun doLoadNextQuote(): QuoteResponse = withContext(ioDispatcher + exceptionHandler) {
         repository.loadNextQuote(lastQuoteId)
     }
 

@@ -23,7 +23,10 @@ class NetworkQuotesRepository(private val loader: UrlLoader, private val sleeper
             }
 
             try {
-                response = mapper.readValue(loader.loadAsStream(url), QuoteResponse::class.java)
+                val stream = loader.loadAsStream(url)
+                response = stream.use {
+                    mapper.readValue(stream, QuoteResponse::class.java)
+                }
                 freshId = response.url
             } catch (noNetwork: UnknownHostException) {
                 throw NetworkException(R.string.error_no_internet)
