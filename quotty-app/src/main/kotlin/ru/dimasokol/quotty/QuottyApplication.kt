@@ -1,6 +1,7 @@
 package ru.dimasokol.quotty
 
 import android.app.Application
+import kotlinx.coroutines.Dispatchers
 import ru.dimasokol.quotty.data.NetworkQuotesRepository
 import ru.dimasokol.quotty.network.DefaultUrlLoader
 import ru.dimasokol.quotty.presentation.MainScreenPresenter
@@ -11,7 +12,7 @@ class QuottyApplication: Application(), AppDependencies {
 
     val presenter: MainScreenPresenter by lazy {
         MainScreenPresenter(StringsLoaderImpl(this@QuottyApplication),
-            NetworkQuotesRepository(DefaultUrlLoader(), ThreadSleeper()))
+            NetworkQuotesRepository(DefaultUrlLoader(), ThreadSleeper()), Dispatchers.Main, Dispatchers.IO)
     }
 
     override fun mainPresenter(): MainScreenPresenter = presenter

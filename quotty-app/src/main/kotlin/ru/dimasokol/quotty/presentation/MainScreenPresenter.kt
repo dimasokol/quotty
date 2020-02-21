@@ -2,7 +2,6 @@ package ru.dimasokol.quotty.presentation
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -11,14 +10,21 @@ import ru.dimasokol.quotty.data.QuoteResponse
 import ru.dimasokol.quotty.data.QuotesRepository
 import ru.dimasokol.quotty.exceptions.BusinessException
 import ru.dimasokol.quotty.utils.StringsLoader
+import kotlin.coroutines.CoroutineContext
 
-class MainScreenPresenter(private val stringsLoader: StringsLoader, private val repository: QuotesRepository) {
+class MainScreenPresenter(
+    private val stringsLoader: StringsLoader,
+    private val repository: QuotesRepository,
+    private val mainDispatcher: CoroutineContext,
+    private val ioDispatcher: CoroutineContext
+) {
     private var currentJob: Job? = null
 
     private var state: MainScreenState = MainScreenState(
         true,
         stringsLoader.getString(R.string.please_wait),
-        stringsLoader.getString(R.string.app_authors))
+        stringsLoader.getString(R.string.app_authors)
+    )
 
     private var view: MainScreenView? = null
 
@@ -56,12 +62,13 @@ class MainScreenPresenter(private val stringsLoader: StringsLoader, private val 
         state = makeLoadingState()
         notifyView()
 
-        currentJob = presenterScope.launch(Dispatchers.Main) {
+        currentJob = presenterScope.launch(mainDispatcher) {
             val result = doLoadNextQuote()
             state = MainScreenState(
                 false,
                 result.text,
-                if (result.author.length > 0) result.author else stringsLoader.getString(R.string.unknown_author))
+                if (result.author.length > 0) result.author else stringsLoader.getString(R.string.unknown_author)
+            )
 
             lastQuoteId = result.url
 
@@ -69,15 +76,14 @@ class MainScreenPresenter(private val stringsLoader: StringsLoader, private val 
         }
     }
 
-    private suspend fun doLoadNextQuote(): QuoteResponse = withContext(Dispatchers.IO) {
+    private suspend fun doLoadNextQuote(): QuoteResponse = withContext(ioDispatcher) {
         repository.loadNextQuote(lastQuoteId)
     }
 
-    private fun makeLoadingState() : MainScreenState
-            = MainScreenState(true, state.text, state.author)
+    private fun makeLoadingState(): MainScreenState =
+        MainScreenState(true, state.text, state.author)
 
-    private fun makeErrorState() : MainScreenState
-            = MainScreenState(false, state.text, state.author)
+    private fun makeErrorState(): MainScreenState = MainScreenState(false, state.text, state.author)
 
     private fun notifyView() {
         view?.renderState(state)
